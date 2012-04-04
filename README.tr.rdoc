@@ -65,62 +65,62 @@ Ayrıca isimlendirilmiş parametrelere blok parametreleri üzerinden de erişebi
     "Merhaba #{n}!"
   end
 
-Route patterns may also include splat (or wildcard) parameters, accessible
-via the <tt>params[:splat]</tt> array:
+Yönlendirme paternleri ayrıca <tt>params[:splat]</tt> array ile erişilebilen 
+splat (ya da wildcard) parametreler de içerebilir:
 
   get '/say/*/to/*' do
-    # matches /say/hello/to/world
+    # /say/hello/to/world adresine eşleşir
     params[:splat] # => ["hello", "world"]
   end
 
   get '/download/*.*' do
-    # matches /download/path/to/file.xml
+    # /download/path/to/file.xml adresiyle eşleşir
     params[:splat] # => ["path/to/file", "xml"]
   end
 
-Or with block parameters:
+Ya da aynı şeyi blok parametreleriyle yaparsak:
 
   get '/download/*.*' do |path, ext|
     [path, ext] # => ["path/to/file", "xml"]
   end
 
-Route matching with Regular Expressions:
+Regular Expression ile yönlendirme:
 
   get %r{/hello/([\w]+)} do
     "Hello, #{params[:captures].first}!"
   end
 
-Or with a block parameter:
+Aynısı blok parametresi ile yapılırsa:
 
   get %r{/hello/([\w]+)} do |c|
     "Hello, #{c}!"
   end
 
-Route patterns may have optional parameters:
+Yönlendirme paternleri opsiyonel parametreler de alabilir:
 
   get '/posts.?:format?' do
-    # matches "GET /posts" and any extension "GET /posts.json", "GET /posts.xml" etc.
+    # "GET /posts" ve herhengi bir ekli hal ile eşleşir "GET /posts.json", "GET /posts.xml" gibi.
   end
 
-By the way, unless you disable the path traversal attack protection (see below),
-the request path might be modified before matching against your routes.
+Sırası gelmişken, eğer path traversal atak korumasını aktif etmediyseniz (aşağıda), 
+çağrılan path sizin yönlendirmelerinizi karşılayacak şekilde değiştirilmiş olabilir.
 
-=== Conditions
+=== Koşullar
 
-Routes may include a variety of matching conditions, such as the user agent:
+Yönlendirmeler birçok koşullu eşleşme yapabilir, örneğin "user agent":
 
   get '/foo', :agent => /Songbird (\d\.\d)[\d\/]*?/ do
-    "You're using Songbird version #{params[:agent][0]}"
+    "Songbird version #{params[:agent][0] kullanıyorsunuz}"
   end
 
   get '/foo' do
-    # Matches non-songbird browsers
+    # songbird olmayan tarayıcılar buraya gelir
   end
 
-Other available conditions are +host_name+ and +provides+:
+Diğer olası koşullar +host_name+ ve +provides+:
 
   get '/', :host_name => /^admin\./ do
-    "Admin Area, Access denied!"
+    "Admin bölgesi, Erişim yasaktır!"
   end
 
   get '/', :provides => 'html' do
@@ -131,19 +131,19 @@ Other available conditions are +host_name+ and +provides+:
     builder :feed
   end
 
-You can easily define your own conditions:
+Kendi koşullarınızı kolayca oluşturabilirsiniz:
 
   set(:probability) { |value| condition { rand <= value } }
 
   get '/win_a_car', :probability => 0.1 do
-    "You won!"
+    "Sen kazandın!"
   end
 
   get '/win_a_car' do
-    "Sorry, you lost."
+    "Üzgünüm, kaybettin."
   end
 
-For a condition that takes multiple values use a splat:
+Birden fazla değer içeren koşullar için splat kullanın:
 
   set(:auth) do |*roles|   # <- notice the splat here
     condition do
@@ -154,32 +154,31 @@ For a condition that takes multiple values use a splat:
   end
 
   get "/my/account/", :auth => [:user, :admin] do
-    "Your Account Details"
+    "user ve admin buraya erişir"
   end
 
   get "/only/admin/", :auth => :admin do
-    "Only admins are allowed here!"
+    "Sadece admin buraya erişir!"
   end
 
-=== Return Values
+=== Döndürülen Değerler
 
-The return value of a route block determines at least the response body passed
-on to the HTTP client, or at least the next middleware in the Rack stack.
-Most commonly, this is a string, as in the above examples. But other values are
-also accepted.
+Bir yönlendirme bloğunun dönen değeri en azından HTTP client'a gönderilen bir 
+cevap sayfası gövdesidir. Yukardaki örneklerdeki gibi çoğunlukla bir string 
+değer döner, fakat diğer değerler de olabilir.
 
-You can return any object that would either be a valid Rack response, Rack
-body object or HTTP status code:
+Herhangi bir nesne dönebilirsiniz. Bu bir Rack response, Rack body nesnesi ya da 
+HTTP status kod olabilir:
 
-* An Array with three elements: <tt>[status (Fixnum), headers (Hash), response
-  body (responds to #each)]</tt>
-* An Array with two elements: <tt>[status (Fixnum), response body (responds to
-  #each)]</tt>
-* An object that responds to <tt>#each</tt> and passes nothing but strings to
-  the given block
-* A Fixnum representing the status code
+* Üç elemanlı bir array: <tt>[status (Fixnum), headers (Hash), response
+  body (#each metoduna cevap verir)]</tt>
+* iki elemanlı bir array: <tt>[status (Fixnum), response body (#each metoduna 
+cevap verir)]</tt>
+* <tt>#each</tt> metoduna cevap veren bir nesne ve verilen bloğa sadece string 
+gönderir
+* Status kodu belirten bir Fixnum
 
-That way we can, for instance, easily implement a streaming example:
+Bu sayede çok kolayca bir sıralama örneği verebiliriz:
 
     class Stream
       def each
@@ -192,11 +191,11 @@ That way we can, for instance, easily implement a streaming example:
 You can also use the +stream+ helper method (described below) to reduce boiler
 plate and embed the streaming logic in the route.
 
-=== Custom Route Matchers
+=== Hazır Yönlendirme Kalıpları
 
-As shown above, Sinatra ships with built-in support for using String patterns
-and regular expressions as route matches. However, it does not stop there. You
-can easily define your own matchers:
+Yukarda göründüğü gibi Sinatra regular expressionlar ve String paternleri 
+yönlendirme için kullanabilecek şekilde paketlenmiş. Ama sadece bu kadar değil. 
+Kendi eşleştirmelerinizi de tanımlayabilirsiniz:
 
   class AllButPattern
     Match = Struct.new(:captures)
@@ -219,8 +218,8 @@ can easily define your own matchers:
     # ...
   end
 
-Note that the above example might be over-engineered, as it can also be
-expressed as:
+Not, bu yukardaki örnekte gereksiz mühendislik yapılmıştır. Bunu şu şekillerde 
+de yapabiliriz:
 
   get // do
     pass if request.path_info == "/index"
@@ -233,56 +232,55 @@ Or, using negative look ahead:
     # ...
   end
 
-== Static Files
+== Static Dosyalar
 
-Static files are served from the <tt>./public</tt> directory. You can specify
-a different location by setting the <tt>:public_folder</tt> option:
+Static dosyalar <tt>./public</tt> klasöründen yayınlanır. Başka bir yeri 
+ayarlamak için <tt>:public_folder</tt> opsiyonu kullanılabilir:
 
   set :public_folder, File.dirname(__FILE__) + '/static'
 
-Note that the public directory name is not included in the URL. A file
-<tt>./public/css/style.css</tt> is made available as
-<tt>http://example.com/css/style.css</tt>.
+Not bu public klasör adı URL içinde kullanılmaz. Örneğin <tt>./public/css/style.css</tt> 
+dosyasını ifade etmek için <tt>http://example.com/css/style.css</tt> kullanılır.
 
-Use the <tt>:static_cache_control</tt> setting (see below) to add
-<tt>Cache-Control</tt> header info.
+<tt>Cache-Control</tt> header bilgisi eklemek için <tt>:static_cache_control</tt> 
+ayarını kullanın.
 
-== Views / Templates
+== Görseller  / Şablonlar
 
-Each template language is exposed as via its own rendering method. These
-methods simply return a string:
+Her şablon dili kendi yayımlama metodu kullanılarak gösterilir. Bu metodlar 
+basit bir şekilde string geri dönerler:
 
   get '/' do
     erb :index
   end
 
-This renders <tt>views/index.erb</tt>.
+Bu satırlar <tt>views/index.erb</tt> dosyasını geri döner.
 
-Instead of a template name, you can also just pass in the template content
-directly:
+Şablon adı yerine şablonun içeriğini direk olarak girebilirsiniz:
 
   get '/' do
     code = "<%= Time.now %>"
     erb code
   end
 
-Templates take a second argument, the options hash:
+Şablonlar opsiyonlar hash'i olarak ikinci bir argüman alır:
 
   get '/' do
     erb :index, :layout => :post
   end
 
-This will render <tt>views/index.erb</tt> embedded in the
-<tt>views/post.erb</tt> (default is <tt>views/layout.erb</tt>, if it exists).
+Bu satırlar ile <tt>views/index.erb</tt> dosyasını <tt>views/post.erb</tt> 
+yerleşimi içinde sunarsınız (default olarak eğer varsa 
+<tt>views/layout.erb</tt> dosyası kullanılır).
 
-Any options not understood by Sinatra will be passed on to the template
-engine:
+Sinatra tarafından anlaşılamayan herhangibir opsiyon şablon işleyiciye 
+gönderilecektir:
 
   get '/' do
     haml :index, :format => :html5
   end
 
-You can also set options per template language in general:
+Ayrıca her şablon dili için genel opsiyon ayarı yapabilirsiniz:
 
   set :haml, :format => :html5
 
@@ -290,11 +288,11 @@ You can also set options per template language in general:
     haml :index
   end
 
-Options passed to the render method override options set via +set+.
+İşleyici metoda gönderilen opsiyonlar +set+ ile girilenlerin üstüne yazacaktır.
 
-Available Options:
+Olası Opsiyonlar:
 
-[locals]
+[local değişkenler]
   List of locals passed to the document. Handy with partials.
   Example: <tt>erb "<%= foo %>", :locals => {:foo => "bar"}</tt>
 
